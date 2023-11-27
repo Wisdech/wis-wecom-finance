@@ -4,11 +4,21 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.qcloud.cos.COSClient;
+import com.qcloud.cos.ClientConfig;
+import com.qcloud.cos.auth.BasicCOSCredentials;
+import com.qcloud.cos.auth.COSCredentials;
+import com.qcloud.cos.http.HttpProtocol;
+import com.qcloud.cos.model.PutObjectRequest;
+import com.qcloud.cos.region.Region;
 import com.tencent.wework.Finance;
 import com.wisdech.wecom.finance.exception.FinanceSDKException;
 import com.wisdech.wecom.finance.helper.PrivateKeyHelper;
 import com.wisdech.wecom.finance.service.FinanceService;
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +38,25 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Value("${app.url}")
     String appUrl;
+
+    @Value("${cos.enable}")
+    Boolean cosEnable;
+
+    @Value("${cos.bucket}")
+    String cosBucket;
+
+    @Value("${cos.region}")
+    String cosRegion;
+
+    @Value("${cos.secret_id}")
+    String cosSecretId;
+
+    @Value("${cos.secret_key}")
+    String cosSecretKey;
+
+    @Value("${cos.cdn_url}")
+    String cosCdnUrl;
+
 
     @Override
     public void init(String corpId, String secret, String privateKey) throws FinanceSDKException {
@@ -79,7 +108,7 @@ public class FinanceServiceImpl implements FinanceService {
 
         File outputFile = new File(getFilePath() + outputFileName);
 
-        if (outputFile.exists()) {
+        if (cosEnable ? cosExist(outputFile) : outputFile.exists()) {
             return getFileUrl(outputFileName);
         } else {
             return getRemoteMedia(sdkFileId, outputFile);
@@ -163,7 +192,7 @@ public class FinanceServiceImpl implements FinanceService {
     }
 
     String getFileUrl(String filename) {
-        return appUrl + "/message-assets/" + corpId + "/" + filename;
+        return (cosEnable ? cosCdnUrl + "/" : (appUrl + "/message-assets/")) + corpId + "/" + filename;
     }
 
     String getRemoteMedia(String sdkFileId, File outputFile) throws Exception {
@@ -183,11 +212,49 @@ public class FinanceServiceImpl implements FinanceService {
 
             if (Finance.IsMediaDataFinish(media_data) == 1) {
                 Finance.FreeMediaData(media_data);
-                return getFileUrl(outputFile.getName());
+                return cosEnable ? cosStore(outputFile) : getFileUrl(outputFile.getName());
             } else {
                 indexbuf = Finance.GetOutIndexBuf(media_data);
                 Finance.FreeMediaData(media_data);
             }
         }
+    }
+
+    String cosStore(File file) {
+
+        COSClient cosClient = initClient();
+
+        String key = corpId + "/" + file.getName();
+        PutObjectRequest putObjectRequest = new PutObjectRequest(cosBucket, key, file);
+        cosClient.putObject(putObjectRequest);
+
+        if (!file.delete()) {
+
+            final String loggerName = "Request:%s";
+
+            final Logger logger = LoggerFactory.getLogger(
+                    String.format(loggerName, MDC.get("TRACE_ID")));
+
+            logger.error("COS Store Success but local file Delete Failed");
+        }
+
+        return getFileUrl(file.getName());
+    }
+
+    Boolean cosExist(File file) {
+
+        COSClient cosClient = initClient();
+
+        String key = corpId + "/" + file.getName();
+
+        return cosClient.doesObjectExist(cosBucket, key);
+
+    }
+
+    COSClient initClient() {
+        COSCredentials cred = new BasicCOSCredentials(cosSecretId, cosSecretKey);
+        ClientConfig clientConfig = new ClientConfig(new Region(cosRegion));
+        clientConfig.setHttpProtocol(HttpProtocol.https);
+        return new COSClient(cred, clientConfig);
     }
 }
