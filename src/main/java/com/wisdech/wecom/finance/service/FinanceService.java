@@ -1,19 +1,16 @@
 package com.wisdech.wecom.finance.service;
 
 import cn.hutool.json.JSONObject;
-import com.wisdech.wecom.finance.entity.Credential;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Service
 public interface FinanceService {
 
-    void initSdk(Credential credential) throws Exception;
+    void init(String corpId, String secret, String privateKey) throws Exception;
 
     List<JSONObject> getMessage(int seq, int limit) throws Exception;
 
-    String getMedia(String sdkFileId) throws Exception;
+    String getMedia(String sdkFileId, String md5, String filename) throws Exception;
 
-    Boolean destroySdk();
+    void destroySdk();
 }

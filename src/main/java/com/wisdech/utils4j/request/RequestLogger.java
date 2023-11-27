@@ -32,7 +32,7 @@ public class RequestLogger implements HandlerInterceptor {
                 requestHelper.getMethod(),
                 requestHelper.getRequestURI(),
                 requestHelper.getQueryString(),
-                requestHelper.getBody()
+                "[SECRET MESSAGE]"
         ));
 
         return true;

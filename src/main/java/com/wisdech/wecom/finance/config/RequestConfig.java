@@ -19,6 +19,7 @@ public class RequestConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new RequestLogger())
+                .excludePathPatterns("/message-assets/**")
                 .addPathPatterns("/**");
     }
 
