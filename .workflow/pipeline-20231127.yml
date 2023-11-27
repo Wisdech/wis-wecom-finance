@@ -37,7 +37,7 @@ stages:
         artifacts:
           - name: BUILD_ARTIFACT
             path:
-              - ./target
+              - ./target/Finance.jar
         settings: []
         caches:
           - ~/.m2
