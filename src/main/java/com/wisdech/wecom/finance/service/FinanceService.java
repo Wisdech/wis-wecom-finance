@@ -10,7 +10,7 @@ public interface FinanceService {
 
     List<JSONObject> getMessage(int seq, int limit) throws Exception;
 
-    String getMedia(String sdkFileId, String md5, String filename) throws Exception;
+    String getMedia(String md5, String sdkFileId, String filename) throws Exception;
 
     void destroySdk();
 }

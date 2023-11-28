@@ -102,7 +102,7 @@ public class FinanceServiceImpl implements FinanceService {
     }
 
     @Override
-    public String getMedia(String sdkFileId, String md5, String filename) throws Exception {
+    public String getMedia(String md5, String sdkFileId, String filename) throws Exception {
 
         String outputFileName = (md5 + "." + filename).toUpperCase();
 

@@ -37,8 +37,8 @@ public class FinanceController {
         }
     }
 
-    @PostMapping("/media/{id}")
-    public ActionResult<?> getMedia(@RequestBody CredentialRequest request, @PathVariable String id, @RequestParam String md5, @RequestParam String name) {
+    @PostMapping("/media/{md5}")
+    public ActionResult<?> getMedia(@RequestBody CredentialRequest request, @PathVariable String md5, @RequestParam String sdkFileId, @RequestParam String filename) {
 
         try {
             financeService.init(
@@ -47,9 +47,9 @@ public class FinanceController {
                     request.getPrivateKey()
             );
 
-            String filename = financeService.getMedia(id, md5, name);
+            String fileUrl = financeService.getMedia(md5, sdkFileId, filename);
 
-            return ActionResult.defaultOk(filename);
+            return ActionResult.defaultOk(fileUrl);
 
         } catch (Exception e) {
             return ActionResult.defaultFailed("5000", e.getMessage(), ARShowType.MESSAGE_ERROR);
