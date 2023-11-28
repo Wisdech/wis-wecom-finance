@@ -17,7 +17,7 @@ public class ActionResult<T> {
 
     Integer showType = ARShowType.SILENT.getType();
     String traceId = MDC.get("TRACE_ID");
-    String host = HostIPHelper.IP();
+    String host = HostIPHelper.getHostIP();
 
     T data = null;
 
