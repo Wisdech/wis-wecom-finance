@@ -16,6 +16,11 @@ public class FinanceController {
     @Autowired
     FinanceService financeService;
 
+    @GetMapping("/")
+    public ActionResult<?> index() {
+        return ActionResult.defaultOk();
+    }
+
     @PostMapping("/messages/{seq}")
     public ActionResult<?> getMessages(@RequestBody CredentialRequest request, @PathVariable Integer seq, @RequestParam(defaultValue = "50") String limit) {
 

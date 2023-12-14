@@ -21,12 +21,20 @@ public class ActionResult<T> {
 
     T data = null;
 
+    public static ActionResult<?> defaultOk() {
+        return new ActionResult<>();
+    }
+
     public static <K> ActionResult<K> defaultOk(K data) {
         return new ActionResult<>(data);
     }
 
     public static ActionResult<?> defaultFailed(String errorCode, String errorMessage, ARShowType showType) {
         return new ActionResult<>(errorCode, errorMessage, showType);
+    }
+
+    public ActionResult() {
+        this.recordResponse();
     }
 
     public ActionResult(T data) {
